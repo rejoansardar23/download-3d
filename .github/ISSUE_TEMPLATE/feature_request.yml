@@ -1,0 +1,26 @@
+name: Feature request
+description: Propose a scoped, testable improvement
+title: "[Feature] "
+body:
+  - type: input
+    id: need
+    attributes:
+      label: User problem and requirement ID
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior and alternative approaches
+    validations:
+      required: true
+  - type: textarea
+    id: criteria
+    attributes:
+      label: Acceptance criteria and reproducible test
+    validations:
+      required: true
+  - type: textarea
+    id: security
+    attributes:
+      label: Permissions, provider API/license and risk considerations
