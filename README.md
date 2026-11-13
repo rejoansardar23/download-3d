@@ -21,6 +21,10 @@ A key usability goal is to remove repetitive manual *Export* clicks **when an au
 
 | Read this | Purpose |
 | --- | --- |
+| [docs/MVP_USAGE.md](docs/MVP_USAGE.md) | Run the working offline inspector and tests |
+| [docs/DOWNLOAD_RUNBOOK.md](docs/DOWNLOAD_RUNBOOK.md) | Exact-ID, motion files, bundling and download-error runbook |
+| [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | Common failed models, network errors and diagnostics |
+| [AGENTS.md](AGENTS.md) | Codex/agent entrypoint with mandatory context |
 | [docs/PRODUCT_REQUIREMENTS.md](docs/PRODUCT_REQUIREMENTS.md) | Goals, use cases, functional / non-functional requirements |
 | [docs/PROJECT_HISTORY.md](docs/PROJECT_HISTORY.md) | Prior discussions, examples, evidence vs unverified claims |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Components, proposed directory layout, data flow |
@@ -41,14 +45,25 @@ A key usability goal is to remove repetitive manual *Export* clicks **when an au
 
 | Capability | Status |
 | --- | --- |
-| Requirements and architecture | Documenting |
+| Requirements and architecture | Developer handbook committed |
 | Live Tripo / Marble downloads | **Not verified in this repository** |
 | Model or world files stored in repo | **None** |
 | Animation clips recovered from example links | **Not verified** |
 | Web viewer, cloud Blender, Kaggle rendering | **Not implemented** |
-| Reproducible tests / starter scripts | Initializing |
+| Offline structural inspector + test suite | **Implemented; initial GitHub Actions run passed** |
 
 Previous chat transcripts contain some claims of successful model retrieval or SPZ download; they are **historical reports, not independently reproduced proof**. File presence, permitted rights, checksums and inspections are the source of truth.
+
+## Working starter and evidence
+
+The repository contains a safe **offline** inspector (GLB, glTF, FBX, SPZ and ZIP). It emits JSON validation reports, flags missing expected glTF animations, and clearly marks FBX motion counts **unknown** without Blender import. [CI successfully tested the initial suite](../../actions/runs/43451650115); subsequent commits will trigger new runs.
+
+```sh
+PYTHONPATH=src python -m unittest discover -s tests -v
+PYTHONPATH=src python -m download3d inspect tests/fixtures/two_animations.gltf --expected-count 2 --expected-clip Walk --expected-clip Wave --out reports/test.json
+```
+
+The inspector does **not** download vendor models, import FBX into Blender, prove rights or guarantee that all motion files exist. See [MVP_USAGE](docs/MVP_USAGE.md) and [GitHub Issues](../../issues).
 
 ## How to start contributing
 

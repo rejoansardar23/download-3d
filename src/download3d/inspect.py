@@ -92,6 +92,9 @@ def _inspect_gltf_object(obj: dict, base_dir: Path, warnings: list[str]) -> dict
                 raise InspectionError("INVALID_GLTF", collection + " entry must be an object")
             if "uri" in item:
                 _check_uri(item["uri"], base_dir, warnings)
+    for field in ("meshes", "skins", "materials", "textures", "nodes"):
+        if not isinstance(obj.get(field, []), list):
+            raise InspectionError("INVALID_GLTF", field + " field must be an array")
     inventory = {
         "animations": len(names),
         "animation_names": names,
@@ -133,7 +136,7 @@ def _inspect_glb(path: Path, warnings: list[str]) -> dict:
                     raise InspectionError("INVALID_GLB", "JSON chunk must occur once and first")
                 if chunk_len > MAX_JSON_BYTES:
                     raise InspectionError("JSON_TOO_LARGE", "GLB JSON chunk exceeds 32 MiB safety cap")
-                obj = _json_bytes(inp.read(chunk_len).rstrip(b"\\x00 \t\r\n"))
+                obj = _json_bytes(inp.read(chunk_len).rstrip(bytes([0, 32, 9, 13, 10])))
                 inventory = _inspect_gltf_object(obj, path.parent, warnings)
                 found_json = True
             else:
@@ -164,7 +167,7 @@ def _inspect_zip(path: Path, warnings: list[str]) -> dict:
                 normalized = posixpath.normpath(name)
                 if (name.startswith("/") or normalized in ("..", ".") or
                         normalized.startswith("../") or ":" in name or
-                        name != item.filename or not name or "\\x00" in name):
+                        name != item.filename or not name or chr(0) in name or ".." in name.split("/")):
                     raise InspectionError("UNSAFE_ZIP_PATH", "Archive has an unsafe entry path")
                 if normalized in seen:
                     raise InspectionError("DUPLICATE_ZIP_PATH", "Archive contains duplicate paths")

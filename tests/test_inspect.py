@@ -45,6 +45,17 @@ class InspectorTests(unittest.TestCase):
     def test_gltf_malformed(self):
         self.assert_error(self.put("bad.gltf", "{broken"), "INVALID_JSON")
 
+    def test_wrong_metadata_type(self):
+        obj = self.sample_gltf()
+        obj["meshes"] = None
+        self.assert_error(self.put("invalid.gltf", json.dumps(obj)), "INVALID_GLTF")
+
+    def test_glb_with_nul_json_padding(self):
+        obj = json.dumps(self.sample_gltf()).encode("utf-8")
+        padded = obj + bytes((4 - len(obj) % 4) % 4)
+        payload = struct.pack("<4sII", b"glTF", 2, 20 + len(padded)) + struct.pack("<I4s", len(padded), b"JSON") + padded
+        self.assertEqual(inspect_file(self.put("nul.glb", payload))["status"], "ok")
+
     def test_empty(self):
         self.assert_error(self.put("empty.gltf", ""), "EMPTY_FILE")
 
@@ -86,6 +97,12 @@ class InspectorTests(unittest.TestCase):
         path = self.root / "slip.zip"
         with zipfile.ZipFile(path, "w") as zf:
             zf.writestr("../secret.txt", "bad")
+        self.assert_error(path, "UNSAFE_ZIP_PATH")
+
+    def test_zip_normalized_parent_path_rejected(self):
+        path = self.root / "nested.zip"
+        with zipfile.ZipFile(path, "w") as zf:
+            zf.writestr("sub/../model.glb", "bad")
         self.assert_error(path, "UNSAFE_ZIP_PATH")
 
     def test_zip_duplicate(self):
