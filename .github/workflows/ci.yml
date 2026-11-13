@@ -1,0 +1,42 @@
+name: Test and validate assets (offline)
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  unit-tests:
+    name: Python inspector safety and animation tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Run pure offline unit tests
+        env:
+          PYTHONPATH: src
+        run: python -m unittest discover -s tests -v
+      - name: Inspect synthetic two-clip sample and create report
+        env:
+          PYTHONPATH: src
+        run: |
+          mkdir -p reports
+          python -m download3d inspect tests/fixtures/two_animations.gltf \
+            --expected-count 2 --expected-clip Walk --expected-clip Wave \
+            --out reports/synthetic-inspection.json
+          cat reports/synthetic-inspection.json
+      - name: Upload safe diagnostic report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: offline-inspection-report
+          path: reports/
+          if-no-files-found: ignore
+          retention-days: 7

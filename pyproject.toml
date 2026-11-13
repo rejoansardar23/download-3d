@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools>=65", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "download3d"
+version = "0.1.0"
+description = "Offline structural 3D asset inspector for authorized assets"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "Proprietary - license not yet selected"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
